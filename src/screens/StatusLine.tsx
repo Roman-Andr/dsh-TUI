@@ -711,6 +711,15 @@ const selectionBadge = formatSelectionBadge(channel.selection)
       ? <Text color="inactiveShimmer">{hint}</Text>
       : null
 
+  // Plugin footer slot: a plugin may publish a component on
+  // globalThis[Symbol.for('dsh-statusline.footer')]; it renders above the
+  // context bar and receives the live session channel. dsh-tui has no
+  // plugin slot under the prompt, so this is the hook for custom status
+  // lines (see the dsh-statusline plugin).
+  const PluginFooter = (globalThis as Record<symbol, unknown>)[
+    Symbol.for('dsh-statusline.footer')
+  ] as React.ComponentType<{ channel: Channel }> | undefined
+
   const compactFields = [...leftFields, ...rightFields]
   const fullLeftFields = [
     ...leftFields,
@@ -748,6 +757,7 @@ const selectionBadge = formatSelectionBadge(channel.selection)
             as per-segment Boxes so the fill can react to the pointer; the bar
             carries no labels — hovering it parks the breakdown of every
             content type on the supplemental row. */}
+        {PluginFooter ? <PluginFooter channel={channel} /> : null}
         {barVisible ? (
           <ContextBarView
             segments={channel.contextSegments}
